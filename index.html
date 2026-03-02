@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Amigos do Sargento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    header { background: #1f4e79; color: white; padding: 16px; text-align: center; }
+    main { max-width: 900px; margin: 16px auto; background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { margin-top: 24px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+    label { display: block; margin-top: 8px; }
+    input, select, button { padding: 8px; margin-top: 4px; font-size: 14px; }
+    button { cursor: pointer; background: #1f4e79; color: white; border: none; border-radius: 4px; }
+    button:hover { background: #163652; }
+    .btn-perigo { background: #a00; }
+    .btn-perigo:hover { background: #700; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; align-items: flex-end; }
+    .form-group { flex: 1; min-width: 160px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+    th { background: #f0f0f0; }
+    .teams { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; }
+    .team { flex: 1; min-width: 220px; background: #f9f9f9; border-radius: 6px; padding: 8px; border: 1px solid #ddd; }
+    .team h3 { margin-top: 0; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Amigos do Sargento</h1>
+    <p>Cadastro de jogadores e sorteio de times</p>
+  </header>
+  <main>
+    <section>
+      <h2>Cadastro de Jogadores</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" placeholder="Nome do jogador" />
+        </div>
+        <div class="form-group">
+          <label for="idade">Idade</label>
+          <input type="number" id="idade" placeholder="Ex: 42" />
+        </div>
+        <div class="form-group">
+          <label for="posicao">Posição</label>
+          <select id="posicao">
+            <option value="goleiro">Goleiro</option>
+            <option value="defesa">Defesa</option>
+            <option value="meio">Meio-campo</option>
+            <option value="ataque">Ataque</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button id="btnAdicionar">Adicionar jogador</button>
+        </div>
+      </div>
+      <table id="tabelaJogadores">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Idade</th>
+            <th>Posição</th>
+            <th>Confirmado hoje?</th>
+            <th>Apagar</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <br />
+      <button class="btn-perigo" id="btnLimparTodos">Limpar todos os jogadores</button>
+    </section>
+    <section>
+      <h2>Sorteio dos Times</h2>
+      <p>Marque quem está confirmado e clique no botão abaixo.</p>
+      <button id="btnSortear">Sortear 3 times</button>
+      <div class="teams">
+        <div class="team"><h3>Time 1</h3><ul id="time1"></ul></div>
+        <div class="team"><h3>Time 2</h3><ul id="time2"></ul></div>
+        <div class="team"><h3>Time 3</h3><ul id="time3"></ul></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    var SENHA_ADMIN = 'sargento123';
+    var jogadores = [];
+
+    var inputNome = document.getElementById('nome');
+    var inputIdade = document.getElementById('idade');
+    var selectPosicao = document.getElementById('posicao');
+    var btnAdicionar = document.getElementById('btnAdicionar');
+    var tabelaBody = document.querySelector('#tabelaJogadores tbody');
+    var btnSortear = document.getElementById('btnSortear');
+    var btnLimparTodos = document.getElementById('btnLimparTodos');
+    var time1El = document.getElementById('time1');
+    var time2El = document.getElementById('time2');
+    var time3El = document.getElementById('time3');
+
+    function salvarJogadores() {
+      localStorage.setItem('jogadores', JSON.stringify(jogadores));
+    }
+
+    function reconstruirTabela() {
+      tabelaBody.innerHTML = '';
+      for (var i = 0; i < jogadores.length; i++) {
+        adicionarLinhaNaTabela(jogadores[i], i);
+      }
+    }
+
+    function adicionarLinhaNaTabela(jogador, index) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + jogador.nome + '</td>' +
+        '<td>' + jogador.idade + '</td>' +
+        '<td>' + jogador.posicao + '</td>' +
+        '<td><input type="checkbox" class="confirmado" /></td>' +
+        '<td><button class="btn-perigo btn-apagar" data-index="' + index + '">Apagar</button></td>';
+      tabelaBody.appendChild(tr);
+    }
+
+    function carregarJogadores() {
+      var salvo = localStorage.getItem('jogadores');
+      if (salvo) {
+        jogadores = JSON.parse(salvo);
+        reconstruirTabela();
+      }
+    }
+
+    btnAdicionar.addEventListener('click', function () {
+      var nome = inputNome.value.trim();
+      var idade = parseInt(inputIdade.value);
+      var posicao = selectPosicao.value;
+
+      if (!nome) { alert('Por favor, informe o nome do jogador.'); return; }
+      if (!idade || idade < 10 || idade > 100) { alert('Por favor, informe uma idade válida.'); return; }
+
+      var jogador = { nome: nome, idade: idade, posicao: posicao };
+      jogadores.push(jogador);
+      salvarJogadores();
+      reconstruirTabela();
+
+      inputNome.value = '';
+      inputIdade.value = '';
+      selectPosicao.value = 'goleiro';
+      inputNome.focus();
+    });
+
+    tabelaBody.addEventListener('click', function (e) {
+      if (e.target && e.target.classList.contains('btn-apagar')) {
+        var index = parseInt(e.target.getAttribute('data-index'));
+        var nome = jogadores[index].nome;
+        if (confirm('Apagar ' + nome + ' da lista?')) {
+          jogadores.splice(index, 1);
+          salvarJogadores();
+          reconstruirTabela();
+        }
+      }
+    });
+
+    btnLimparTodos.addEventListener('click', function () {
+      var senha = prompt('Digite a senha para limpar todos os jogadores:');
+      if (senha === null) return;
+      if (senha !== SENHA_ADMIN) {
+        alert('Senha incorreta. Nenhum jogador foi removido.');
+        return;
+      }
+      if (confirm('Tem certeza? Isso vai apagar TODOS os jogadores.')) {
+        jogadores = [];
+        salvarJogadores();
+        reconstruirTabela();
+        alert('Lista apagada com sucesso.');
+      }
+    });
+
+    btnSortear.addEventListener('click', function () {
+      var linhas = tabelaBody.querySelectorAll('tr');
+      var confirmados = [];
+
+      for (var i = 0; i < linhas.length; i++) {
+        var checkbox = linhas[i].querySelector('.confirmado');
+        var index = parseInt(linhas[i].querySelector('.btn-apagar').getAttribute('data-index'));
+        if (checkbox && checkbox.checked) {
+          confirmados.push(jogadores[index]);
+        }
+      }
+
+      if (confirmados.length === 0) { alert('Nenhum jogador confirmado para hoje.'); return; }
+
+      // Separar por posicao
+      var grupos = { goleiro: [], defesa: [], meio: [], ataque: [] };
+      for (var i = 0; i < confirmados.length; i++) {
+        var pos = confirmados[i].posicao;
+        if (grupos[pos]) grupos[pos].push(confirmados[i]);
+      }
+
+      // Embaralhar cada grupo
+      var posicoes = ['goleiro', 'defesa', 'meio', 'ataque'];
+      for (var p = 0; p < posicoes.length; p++) {
+        var grupo = grupos[posicoes[p]];
+        for (var i = grupo.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = grupo[i];
+          grupo[i] = grupo[j];
+          grupo[j] = temp;
+        }
+      }
+
+      // Distribuir ciclicamente entre os 3 times por posicao
+      var times = [time1El, time2El, time3El];
+      time1El.innerHTML = '';
+      time2El.innerHTML = '';
+      time3El.innerHTML = '';
+
+      var indiceTime = 0;
+      for (var p = 0; p < posicoes.length; p++) {
+        var grupo = grupos[posicoes[p]];
+        for (var i = 0; i < grupo.length; i++) {
+          var li = document.createElement('li');
+          li.textContent = grupo[i].nome + ' (' + grupo[i].idade + ' anos, ' + grupo[i].posicao + ')';
+          times[indiceTime].appendChild(li);
+          indiceTime = (indiceTime + 1) % 3;
+        }
+      }
+    });
+
+    carregarJogadores();
+  </script>
+</body>
+</html>
