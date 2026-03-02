@@ -1,229 +1,835 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amigos do Sargento</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-    header { background: #1f4e79; color: white; padding: 16px; text-align: center; }
-    main { max-width: 900px; margin: 16px auto; background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    h2 { margin-top: 24px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
-    label { display: block; margin-top: 8px; }
-    input, select, button { padding: 8px; margin-top: 4px; font-size: 14px; }
-    button { cursor: pointer; background: #1f4e79; color: white; border: none; border-radius: 4px; }
-    button:hover { background: #163652; }
-    .btn-perigo { background: #a00; }
-    .btn-perigo:hover { background: #700; }
-    .form-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; align-items: flex-end; }
-    .form-group { flex: 1; min-width: 160px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
-    th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-    th { background: #f0f0f0; }
-    .teams { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; }
-    .team { flex: 1; min-width: 220px; background: #f9f9f9; border-radius: 6px; padding: 8px; border: 1px solid #ddd; }
-    .team h3 { margin-top: 0; text-align: center; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #16213e, #0f3460);
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 3px solid #e94560;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 { font-size: 1.5rem; color: #fff; letter-spacing: 2px; }
+    header p  { color: #aaa; font-size: 0.85rem; margin-top: 4px; }
+
+    /* ANIVERSARIANTES - fixo logo abaixo do header */
+    #avisoAniversario {
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #1a1a2e;
+      padding: 12px 20px;
+      display: none;
+      position: sticky;
+      top: 72px;
+      z-index: 99;
+      border-bottom: 2px solid #e67e00;
+    }
+
+    #avisoAniversario h3 { font-size: 1rem; margin-bottom: 6px; }
+    #avisoAniversario ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    #avisoAniversario ul li {
+      background: rgba(0,0,0,0.15);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.88rem;
+    }
+
+    /* AVISO DIA DE JOGO */
+    #avisoDiaJogo {
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    #avisoDiaJogo.bloqueado {
+      background: #c0392b;
+      color: #fff;
+      display: block;
+    }
+
+    #avisoDiaJogo.liberado {
+      background: #27ae60;
+      color: #fff;
+      display: block;
+    }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+    .card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #0f3460;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      color: #e94560;
+      margin-bottom: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      background: #0f3460;
+      border: 1px solid #e94560;
+      color: #eee;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 0.93rem;
+      width: 100%;
+    }
+
+    input::placeholder { color: #888; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 9px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.82; }
+
+    .btn-primary  { background: #e94560; color: #fff; }
+    .btn-success  { background: #27ae60; color: #fff; }
+    .btn-warning  { background: #f39c12; color: #1a1a2e; }
+    .btn-danger   { background: #c0392b; color: #fff; }
+    .btn-info     { background: #2980b9; color: #fff; }
+    .btn-whatsapp { background: #25D366; color: #fff; }
+    .btn-gray     { background: #555; color: #fff; }
+
+    /* CONTADORES */
+    .info-bar {
+      background: #0f3460;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .info-bar span { color: #aaa; }
+    .info-bar strong { color: #2ecc71; }
+
+    /* FILTRO */
+    .filtro-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filtro-row label { font-size: 0.88rem; color: #aaa; cursor: pointer; }
+
+    /* TABELA */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+    th {
+      background: #0f3460;
+      color: #e94560;
+      padding: 9px 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #0f3460;
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: #1a2a4a; }
+
+    input[type="checkbox"] {
+      width: 17px; height: 17px;
+      cursor: pointer;
+      accent-color: #2ecc71;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .badge-conf    { background: #2ecc71; color: #1a1a2e; }
+    .badge-reserva { background: #f39c12; color: #1a1a2e; }
+
+    /* RESERVAS */
+    #secaoReservas { display: none; }
+
+    #listaReservas { list-style: none; padding: 0; }
+
+    #listaReservas li {
+      background: #0f3460;
+      border-left: 4px solid #f39c12;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    /* TIMES */
+    .times-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .time-card {
+      border-radius: 12px;
+      padding: 14px;
+      min-height: 160px;
+    }
+
+    .time-vermelho { background: linear-gradient(160deg,#7b0000,#c0392b); border: 2px solid #e74c3c; }
+    .time-azul     { background: linear-gradient(160deg,#00006b,#2980b9); border: 2px solid #3498db; }
+    .time-verde    { background: linear-gradient(160deg,#004d00,#27ae60); border: 2px solid #2ecc71; }
+
+    .time-card h3 { font-size: 0.95rem; margin-bottom: 8px; }
+
+    .time-card ul { list-style: none; padding: 0; }
+
+    .time-card ul li {
+      font-size: 0.8rem;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .time-card ul li:last-child { border-bottom: none; }
+
+    .media-idade {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #ffd200;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .times-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Amigos do Sargento</h1>
-    <p>Cadastro de jogadores e sorteio de times</p>
-  </header>
-  <main>
-    <section>
-      <h2>Cadastro de Jogadores</h2>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="nome">Nome</label>
-          <input type="text" id="nome" placeholder="Nome do jogador" />
-        </div>
-        <div class="form-group">
-          <label for="idade">Idade</label>
-          <input type="number" id="idade" placeholder="Ex: 42" />
-        </div>
-        <div class="form-group">
-          <label for="posicao">Posição</label>
-          <select id="posicao">
-            <option value="goleiro">Goleiro</option>
-            <option value="defesa">Defesa</option>
-            <option value="meio">Meio-campo</option>
-            <option value="ataque">Ataque</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <button id="btnAdicionar">Adicionar jogador</button>
-        </div>
-      </div>
-      <table id="tabelaJogadores">
+
+<header>
+  <h1>⚽ Amigos do Sargento</h1>
+  <p>Gestão de times e confirmações</p>
+</header>
+
+<!-- ANIVERSARIANTES FIXO -->
+<div id="avisoAniversario">
+  <h3>🎂 Aniversariantes desta semana</h3>
+  <ul id="listaAniversariantes"></ul>
+</div>
+
+<!-- AVISO DIA DE JOGO -->
+<div id="avisoDiaJogo"></div>
+
+<div class="container">
+
+  <!-- CADASTRO -->
+  <div class="card">
+    <h2>📋 Cadastro de Jogadores</h2>
+    <div class="form-grid">
+      <input type="text" id="inputNome" placeholder="Nome do jogador">
+      <input type="date" id="inputDataNasc">
+      <select id="inputPosPref">
+        <option value="">-- Posição preferida --</option>
+        <option value="Goleiro">Goleiro</option>
+        <option value="Defesa">Defesa</option>
+        <option value="Meio">Meio</option>
+        <option value="Ataque">Ataque</option>
+      </select>
+      <select id="inputPosAlt">
+        <option value="">-- Posição alternativa --</option>
+        <option value="Goleiro">Goleiro</option>
+        <option value="Defesa">Defesa</option>
+        <option value="Meio">Meio</option>
+        <option value="Ataque">Ataque</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="adicionarJogador()">➕ Adicionar</button>
+      <button class="btn-info" onclick="exportarJogadores()">📤 Exportar</button>
+      <button class="btn-info" onclick="document.getElementById('inputImportar').click()">📥 Importar</button>
+      <input type="file" id="inputImportar" accept=".json" style="display:none" onchange="importarJogadores(event)">
+      <button class="btn-danger" onclick="limparTodos()">🗑️ Limpar todos</button>
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="card">
+    <h2>👥 Lista de Jogadores</h2>
+
+    <div class="info-bar">
+      <span>Cadastrados: <strong id="totalCad">0</strong></span>
+      <span>Confirmados: <strong id="totalConf">0</strong> / 21</span>
+      <span>Reservas: <strong id="totalRes">0</strong></span>
+    </div>
+
+    <div class="filtro-row">
+      <label>
+        <input type="checkbox" id="filtroConf" onchange="renderTabela()">
+        Mostrar só confirmados hoje
+      </label>
+    </div>
+
+    <div class="table-wrap">
+      <table>
         <thead>
           <tr>
+            <th>#</th>
             <th>Nome</th>
+            <th>Nascimento</th>
             <th>Idade</th>
-            <th>Posição</th>
-            <th>Confirmado hoje?</th>
-            <th>Apagar</th>
+            <th>Pos. Pref.</th>
+            <th>Pos. Alt.</th>
+            <th>Confirmado</th>
+            <th>Situação</th>
+            <th>Ação</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tabelaBody"></tbody>
       </table>
-      <br />
-      <button class="btn-perigo" id="btnLimparTodos">Limpar todos os jogadores</button>
-    </section>
-    <section>
-      <h2>Sorteio dos Times</h2>
-      <p>Marque quem está confirmado e clique no botão abaixo.</p>
-      <button id="btnSortear">Sortear 3 times</button>
-      <div class="teams">
-        <div class="team"><h3>Time 1</h3><ul id="time1"></ul></div>
-        <div class="team"><h3>Time 2</h3><ul id="time2"></ul></div>
-        <div class="team"><h3>Time 3</h3><ul id="time3"></ul></div>
+    </div>
+  </div>
+
+  <!-- RESERVAS -->
+  <div class="card" id="secaoReservas">
+    <h2>⏳ Lista de Reservas</h2>
+    <p style="font-size:0.85rem;color:#aaa;margin-bottom:10px;">
+      Quando um confirmado desistir, o primeiro reserva entra automaticamente.
+    </p>
+    <ul id="listaReservas"></ul>
+  </div>
+
+  <!-- SORTEIO -->
+  <div class="card">
+    <h2>🎲 Sorteio dos Times</h2>
+    <div class="btn-row">
+      <button class="btn-success" onclick="sortearTimes()">⚽ Sortear 3 Times</button>
+      <button class="btn-whatsapp" onclick="enviarWhatsApp()">📲 Enviar no WhatsApp</button>
+    </div>
+    <div class="times-grid">
+      <div class="time-card time-vermelho">
+        <h3>🔴 Time 1 — Vermelho</h3>
+        <ul id="listaTime1"></ul>
+        <div class="media-idade" id="mediaTime1"></div>
       </div>
-    </section>
-  </main>
-  <script>
-    var SENHA_ADMIN = 'sargento123';
-    var jogadores = [];
+      <div class="time-card time-azul">
+        <h3>🔵 Time 2 — Azul</h3>
+        <ul id="listaTime2"></ul>
+        <div class="media-idade" id="mediaTime2"></div>
+      </div>
+      <div class="time-card time-verde">
+        <h3>🟢 Time 3 — Verde</h3>
+        <ul id="listaTime3"></ul>
+        <div class="media-idade" id="mediaTime3"></div>
+      </div>
+    </div>
+  </div>
 
-    var inputNome = document.getElementById('nome');
-    var inputIdade = document.getElementById('idade');
-    var selectPosicao = document.getElementById('posicao');
-    var btnAdicionar = document.getElementById('btnAdicionar');
-    var tabelaBody = document.querySelector('#tabelaJogadores tbody');
-    var btnSortear = document.getElementById('btnSortear');
-    var btnLimparTodos = document.getElementById('btnLimparTodos');
-    var time1El = document.getElementById('time1');
-    var time2El = document.getElementById('time2');
-    var time3El = document.getElementById('time3');
+</div><!-- /container -->
 
-    function salvarJogadores() {
-      localStorage.setItem('jogadores', JSON.stringify(jogadores));
+<script>
+  // ===================== DADOS =====================
+
+  var jogadores = [];
+  var reservas  = [];
+  var ultimosTimes = null;
+
+  // ===================== DIAS DE JOGO =====================
+  // 1 = segunda-feira, 4 = quinta-feira
+  var DIAS_DE_JOGO = [1, 4];
+
+  function ehDiaDeJogo() {
+    return DIAS_DE_JOGO.indexOf(new Date().getDay()) !== -1;
+  }
+
+  function mostrarAvisoDiaJogo() {
+    var div = document.getElementById('avisoDiaJogo');
+    if (ehDiaDeJogo()) {
+      div.textContent = '✅ Hoje é dia de jogo! Confirmações liberadas.';
+      div.className = 'liberado';
+    } else {
+      div.textContent = '🚫 Confirmações liberadas apenas às segundas e quintas-feiras (dias de jogo).';
+      div.className = 'bloqueado';
+    }
+  }
+
+  // ===================== LOCAL STORAGE =====================
+
+  function salvar() {
+    localStorage.setItem('asg_jogadores', JSON.stringify(jogadores));
+    localStorage.setItem('asg_reservas',  JSON.stringify(reservas));
+  }
+
+  function carregar() {
+    try {
+      var j = localStorage.getItem('asg_jogadores');
+      var r = localStorage.getItem('asg_reservas');
+      if (j) jogadores = JSON.parse(j);
+      if (r) reservas  = JSON.parse(r);
+    } catch(e) { console.error(e); }
+  }
+
+  // ===================== UTILITÁRIOS =====================
+
+  function calcularIdade(dataNasc) {
+    if (!dataNasc) return null;
+    var hoje = new Date();
+    var nasc = new Date(dataNasc + 'T00:00:00');
+    if (isNaN(nasc)) return null;
+    var idade = hoje.getFullYear() - nasc.getFullYear();
+    var m = hoje.getMonth() - nasc.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+    return idade;
+  }
+
+  function formatarData(dataNasc) {
+    if (!dataNasc) return '-';
+    var p = dataNasc.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  function gerarId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function totalConfirmados() {
+    return jogadores.filter(function(j){ return j.confirmado; }).length;
+  }
+
+  // ===================== ANIVERSARIANTES =====================
+
+  function aniversariantesSemana() {
+    var hoje = new Date();
+    var dia = hoje.getDay();
+    var diffSeg = (dia === 0) ? -6 : 1 - dia;
+    var seg = new Date(hoje);
+    seg.setDate(hoje.getDate() + diffSeg);
+    seg.setHours(0,0,0,0);
+    var dom = new Date(seg);
+    dom.setDate(seg.getDate() + 6);
+    dom.setHours(23,59,59,999);
+
+    return jogadores.filter(function(j) {
+      if (!j.dataNasc) return false;
+      var nasc = new Date(j.dataNasc + 'T00:00:00');
+      var aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+      return aniv >= seg && aniv <= dom;
+    });
+  }
+
+  function renderAniversariantes() {
+    var lista = aniversariantesSemana();
+    var div  = document.getElementById('avisoAniversario');
+    var ul   = document.getElementById('listaAniversariantes');
+    ul.innerHTML = '';
+
+    if (lista.length === 0) {
+      div.style.display = 'none';
+      return;
     }
 
-    function reconstruirTabela() {
-      tabelaBody.innerHTML = '';
-      for (var i = 0; i < jogadores.length; i++) {
-        adicionarLinhaNaTabela(jogadores[i], i);
-      }
-    }
+    div.style.display = 'block';
+    lista.forEach(function(j) {
+      var nasc = new Date(j.dataNasc + 'T00:00:00');
+      var dia  = String(nasc.getDate()).padStart(2,'0');
+      var mes  = String(nasc.getMonth()+1).padStart(2,'0');
+      var idade = calcularIdade(j.dataNasc);
+      var li = document.createElement('li');
+      li.textContent = j.nome + ' — ' + dia + '/' + mes + ' (' + idade + ' anos)';
+      ul.appendChild(li);
+    });
+  }
 
-    function adicionarLinhaNaTabela(jogador, index) {
+  // ===================== TABELA =====================
+
+  function renderTabela() {
+    var tbody = document.getElementById('tabelaBody');
+    tbody.innerHTML = '';
+    var soConf = document.getElementById('filtroConf').checked;
+    var num = 0;
+
+    jogadores.forEach(function(j, i) {
+      if (soConf && !j.confirmado) return;
+      num++;
+
+      var emReserva = reservas.indexOf(j.id) !== -1;
       var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>' + jogador.nome + '</td>' +
-        '<td>' + jogador.idade + '</td>' +
-        '<td>' + jogador.posicao + '</td>' +
-        '<td><input type="checkbox" class="confirmado" /></td>' +
-        '<td><button class="btn-perigo btn-apagar" data-index="' + index + '">Apagar</button></td>';
-      tabelaBody.appendChild(tr);
+
+      // #
+      td(tr, num);
+
+      // Nome
+      td(tr, j.nome);
+
+      // Nascimento
+      td(tr, formatarData(j.dataNasc));
+
+      // Idade
+      var idade = calcularIdade(j.dataNasc);
+      td(tr, idade !== null ? idade + ' a.' : '-');
+
+      // Posições
+      td(tr, j.posPref || '-');
+      td(tr, j.posAlt  || '-');
+
+      // Checkbox confirmado
+      var tdChk = document.createElement('td');
+      var chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = !!j.confirmado;
+      chk.disabled = !ehDiaDeJogo();
+      chk.addEventListener('change', function() {
+        alterarConfirmacao(i, chk.checked);
+      });
+      tdChk.appendChild(chk);
+      tr.appendChild(tdChk);
+
+      // Situação
+      var tdSit = document.createElement('td');
+      if (emReserva) {
+        var bRes = document.createElement('span');
+        bRes.className = 'badge badge-reserva';
+        bRes.textContent = 'Reserva';
+        tdSit.appendChild(bRes);
+      } else if (j.confirmado) {
+        var bConf = document.createElement('span');
+        bConf.className = 'badge badge-conf';
+        bConf.textContent = 'Confirmado';
+        tdSit.appendChild(bConf);
+      } else {
+        tdSit.textContent = '-';
+      }
+      tr.appendChild(tdSit);
+
+      // Apagar
+      var tdAp = document.createElement('td');
+      var btn = document.createElement('button');
+      btn.textContent = 'Apagar';
+      btn.className = 'btn-danger';
+      btn.style.fontSize = '0.78rem';
+      btn.style.padding = '4px 8px';
+      btn.addEventListener('click', function() { apagarJogador(i); });
+      tdAp.appendChild(btn);
+      tr.appendChild(tdAp);
+
+      tbody.appendChild(tr);
+    });
+
+    atualizarContadores();
+    renderReservas();
+  }
+
+  function td(tr, texto) {
+    var cel = document.createElement('td');
+    cel.textContent = texto;
+    tr.appendChild(cel);
+  }
+
+  function atualizarContadores() {
+    document.getElementById('totalCad').textContent  = jogadores.length;
+    document.getElementById('totalConf').textContent = totalConfirmados();
+    document.getElementById('totalRes').textContent  = reservas.length;
+  }
+
+  // ===================== RESERVAS =====================
+
+  function renderReservas() {
+    var sec = document.getElementById('secaoReservas');
+    var ul  = document.getElementById('listaReservas');
+    ul.innerHTML = '';
+
+    if (reservas.length === 0) {
+      sec.style.display = 'none';
+      return;
     }
 
-    function carregarJogadores() {
-      var salvo = localStorage.getItem('jogadores');
-      if (salvo) {
-        jogadores = JSON.parse(salvo);
-        reconstruirTabela();
+    sec.style.display = 'block';
+    reservas.forEach(function(id, pos) {
+      var j = jogadores.find(function(x){ return x.id === id; });
+      if (!j) return;
+      var li = document.createElement('li');
+      li.textContent = (pos+1) + 'º — ' + j.nome + ' (' + (j.posPref||'?') + ')';
+      ul.appendChild(li);
+    });
+  }
+
+  // ===================== CONFIRMAÇÃO =====================
+
+  function alterarConfirmacao(index, novoValor) {
+    if (!ehDiaDeJogo()) {
+      alert('Confirmações só são permitidas às segundas e quintas-feiras.');
+      renderTabela();
+      return;
+    }
+
+    var j = jogadores[index];
+
+    if (!novoValor) {
+      // Desconfirmando
+      j.confirmado = false;
+      var idxRes = reservas.indexOf(j.id);
+      if (idxRes !== -1) reservas.splice(idxRes, 1);
+
+      // Promover primeiro da reserva
+      if (reservas.length > 0) {
+        var primeiroId = reservas.shift();
+        var reservista = jogadores.find(function(x){ return x.id === primeiroId; });
+        if (reservista) {
+          reservista.confirmado = true;
+          alert(reservista.nome + ' saiu da reserva e foi confirmado!');
+        }
+      }
+    } else {
+      // Confirmando
+      if (totalConfirmados() >= 21) {
+        j.confirmado = false;
+        if (reservas.indexOf(j.id) === -1) reservas.push(j.id);
+        alert('⛔ Equipes completas! ' + j.nome + ' foi adicionado à lista de reserva.');
+      } else {
+        j.confirmado = true;
+        var ir = reservas.indexOf(j.id);
+        if (ir !== -1) reservas.splice(ir, 1);
       }
     }
 
-    btnAdicionar.addEventListener('click', function () {
-      var nome = inputNome.value.trim();
-      var idade = parseInt(inputIdade.value);
-      var posicao = selectPosicao.value;
+    salvar();
+    renderTabela();
+  }
 
-      if (!nome) { alert('Por favor, informe o nome do jogador.'); return; }
-      if (!idade || idade < 10 || idade > 100) { alert('Por favor, informe uma idade válida.'); return; }
+  // ===================== CRUD =====================
 
-      var jogador = { nome: nome, idade: idade, posicao: posicao };
-      jogadores.push(jogador);
-      salvarJogadores();
-      reconstruirTabela();
+  function adicionarJogador() {
+    var nome = document.getElementById('inputNome').value.trim();
+    var dataNasc = document.getElementById('inputDataNasc').value;
+    var posPref = document.getElementById('inputPosPref').value;
+    var posAlt  = document.getElementById('inputPosAlt').value;
 
-      inputNome.value = '';
-      inputIdade.value = '';
-      selectPosicao.value = 'goleiro';
-      inputNome.focus();
+    if (!nome) { alert('Informe o nome do jogador.'); return; }
+
+    jogadores.push({
+      id: gerarId(),
+      nome: nome,
+      dataNasc: dataNasc || '',
+      posPref: posPref || '',
+      posAlt:  posAlt  || '',
+      confirmado: false
     });
 
-    tabelaBody.addEventListener('click', function (e) {
-      if (e.target && e.target.classList.contains('btn-apagar')) {
-        var index = parseInt(e.target.getAttribute('data-index'));
-        var nome = jogadores[index].nome;
-        if (confirm('Apagar ' + nome + ' da lista?')) {
-          jogadores.splice(index, 1);
-          salvarJogadores();
-          reconstruirTabela();
-        }
-      }
+    document.getElementById('inputNome').value    = '';
+    document.getElementById('inputDataNasc').value = '';
+    document.getElementById('inputPosPref').value  = '';
+    document.getElementById('inputPosAlt').value   = '';
+
+    salvar();
+    renderTabela();
+    renderAniversariantes();
+  }
+
+  function apagarJogador(index) {
+    if (!confirm('Apagar ' + jogadores[index].nome + '?')) return;
+    var id = jogadores[index].id;
+    var ir = reservas.indexOf(id);
+    if (ir !== -1) reservas.splice(ir, 1);
+    jogadores.splice(index, 1);
+    salvar();
+    renderTabela();
+    renderAniversariantes();
+  }
+
+  function limparTodos() {
+    var senha = prompt('Digite a senha para apagar todos os jogadores:');
+    if (senha === null) return;
+    if (senha !== 'sargento123') { alert('Senha incorreta.'); return; }
+    if (!confirm('Tem certeza? Todos os jogadores serão apagados.')) return;
+    jogadores = [];
+    reservas  = [];
+    salvar();
+    renderTabela();
+    renderAniversariantes();
+  }
+
+  // ===================== EXPORTAR / IMPORTAR =====================
+
+  function exportarJogadores() {
+    var blob = new Blob([JSON.stringify({jogadores:jogadores,reservas:reservas},null,2)],
+      {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'amigos-do-sargento.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function importarJogadores(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var obj = JSON.parse(ev.target.result);
+        if (Array.isArray(obj.jogadores)) jogadores = obj.jogadores;
+        if (Array.isArray(obj.reservas))  reservas  = obj.reservas;
+        salvar();
+        renderTabela();
+        renderAniversariantes();
+        alert('Jogadores importados com sucesso!');
+      } catch(err) { alert('Arquivo inválido.'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  // ===================== SORTEIO =====================
+
+  function sortearTimes() {
+    var confirmados = jogadores.filter(function(j){ return j.confirmado; });
+
+    if (confirmados.length === 0) {
+      alert('Nenhum jogador confirmado.');
+      return;
+    }
+
+    confirmados.forEach(function(j){
+      j._idade = calcularIdade(j.dataNasc) || 0;
     });
 
-    btnLimparTodos.addEventListener('click', function () {
-      var senha = prompt('Digite a senha para limpar todos os jogadores:');
-      if (senha === null) return;
-      if (senha !== SENHA_ADMIN) {
-        alert('Senha incorreta. Nenhum jogador foi removido.');
-        return;
-      }
-      if (confirm('Tem certeza? Isso vai apagar TODOS os jogadores.')) {
-        jogadores = [];
-        salvarJogadores();
-        reconstruirTabela();
-        alert('Lista apagada com sucesso.');
-      }
+    var grupos = { Goleiro:[], Defesa:[], Meio:[], Ataque:[], '':[] };
+
+    confirmados.forEach(function(j){
+      var pos = j.posPref || '';
+      if (!grupos[pos]) grupos[pos] = [];
+      grupos[pos].push(j);
     });
 
-    btnSortear.addEventListener('click', function () {
-      var linhas = tabelaBody.querySelectorAll('tr');
-      var confirmados = [];
-
-      for (var i = 0; i < linhas.length; i++) {
-        var checkbox = linhas[i].querySelector('.confirmado');
-        var index = parseInt(linhas[i].querySelector('.btn-apagar').getAttribute('data-index'));
-        if (checkbox && checkbox.checked) {
-          confirmados.push(jogadores[index]);
-        }
-      }
-
-      if (confirmados.length === 0) { alert('Nenhum jogador confirmado para hoje.'); return; }
-
-      // Separar por posicao
-      var grupos = { goleiro: [], defesa: [], meio: [], ataque: [] };
-      for (var i = 0; i < confirmados.length; i++) {
-        var pos = confirmados[i].posicao;
-        if (grupos[pos]) grupos[pos].push(confirmados[i]);
-      }
-
-      // Embaralhar cada grupo
-      var posicoes = ['goleiro', 'defesa', 'meio', 'ataque'];
-      for (var p = 0; p < posicoes.length; p++) {
-        var grupo = grupos[posicoes[p]];
-        for (var i = grupo.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var temp = grupo[i];
-          grupo[i] = grupo[j];
-          grupo[j] = temp;
-        }
-      }
-
-      // Distribuir ciclicamente entre os 3 times por posicao
-      var times = [time1El, time2El, time3El];
-      time1El.innerHTML = '';
-      time2El.innerHTML = '';
-      time3El.innerHTML = '';
-
-      var indiceTime = 0;
-      for (var p = 0; p < posicoes.length; p++) {
-        var grupo = grupos[posicoes[p]];
-        for (var i = 0; i < grupo.length; i++) {
-          var li = document.createElement('li');
-          li.textContent = grupo[i].nome + ' (' + grupo[i].idade + ' anos, ' + grupo[i].posicao + ')';
-          times[indiceTime].appendChild(li);
-          indiceTime = (indiceTime + 1) % 3;
-        }
-      }
+    Object.keys(grupos).forEach(function(p){
+      grupos[p].sort(function(a,b){ return b._idade - a._idade; });
     });
 
-    carregarJogadores();
-  </script>
+    var times = [
+      {nome:'Time 1', jogadores:[], totalIdade:0},
+      {nome:'Time 2', jogadores:[], totalIdade:0},
+      {nome:'Time 3', jogadores:[], totalIdade:0}
+    ];
+
+    ['Goleiro','Defesa','Meio','Ataque',''].forEach(function(p){
+      var grupo = grupos[p] || [];
+      var idx = 0;
+      grupo.forEach(function(j){
+        times[idx].jogadores.push(j);
+        times[idx].totalIdade += j._idade;
+        idx = (idx + 1) % 3;
+      });
+    });
+
+    function renderTime(ulId, mediaId, time) {
+      var ul = document.getElementById(ulId);
+      var md = document.getElementById(mediaId);
+      ul.innerHTML = '';
+      time.jogadores.forEach(function(j){
+        var li = document.createElement('li');
+        li.textContent = j.nome + ' (' + j._idade + 'a, ' + (j.posPref||'?') +
+          (j.posAlt ? '/' + j.posAlt : '') + ')';
+        ul.appendChild(li);
+      });
+      if (time.jogadores.length > 0) {
+        md.textContent = 'Média de idade: ' +
+          (time.totalIdade / time.jogadores.length).toFixed(1) + ' anos';
+      } else {
+        md.textContent = '';
+      }
+    }
+
+    renderTime('listaTime1','mediaTime1', times[0]);
+    renderTime('listaTime2','mediaTime2', times[1]);
+    renderTime('listaTime3','mediaTime3', times[2]);
+
+    ultimosTimes = times;
+  }
+
+  // ===================== WHATSAPP =====================
+
+  function enviarWhatsApp() {
+    if (!ultimosTimes) { alert('Faça o sorteio primeiro.'); return; }
+
+    var cores = ['Vermelho','Azul','Verde'];
+    var icones = ['🔴','🔵','🟢'];
+    var texto = '⚽ *Amigos do Sargento — Times do dia* ⚽\n\n';
+
+    ultimosTimes.forEach(function(t, i){
+      texto += icones[i] + ' *' + t.nome + ' (' + cores[i] + ')*\n';
+      t.jogadores.forEach(function(j){
+        var idade = j._idade || calcularIdade(j.dataNasc) || '?';
+        texto += '• ' + j.nome + ' (' + idade + 'a, ' + (j.posPref||'?');
+        if (j.posAlt) texto += '/' + j.posAlt;
+        texto += ')\n';
+      });
+      if (t.jogadores.length > 0) {
+        texto += '_Média de idade: ' +
+          (t.totalIdade / t.jogadores.length).toFixed(1) + ' anos_\n';
+      }
+      texto += '\n';
+    });
+
+    var url = 'https://wa.me/?text=' + encodeURIComponent(texto);
+    window.open(url, '_blank');
+  }
+
+  // ===================== INIT =====================
+
+  carregar();
+  renderTabela();
+  renderAniversariantes();
+  mostrarAvisoDiaJogo();
+</script>
 </body>
 </html>
